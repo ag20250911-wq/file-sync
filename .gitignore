@@ -1,0 +1,33 @@
+# --- Rust関連 ---
+**/target/
+Cargo.lock
+
+# --- Node.js / フロントエンド関連 ---
+**/node_modules/
+**/dist/
+**/dist-ssr/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- このアプリ固有の実行時生成ファイル ---
+downloading_state.json
+local_file_cache.json
+upload_history.json
+config.json
+
+# --- OS / エディタ関連 ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+
+# --- Media ---
+*.mp3
+*.wav
+
+# --- 機密情報 ---
+.env

@@ -1,0 +1,13 @@
+[package]
+name = "dir_json"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+blake3 = "1.8.3"
+chrono = { version = "0.4.43", features = ["serde"] }
+hex = "0.4.3"
+memmap2 = "0.9.9"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+walkdir = "2.5.0"

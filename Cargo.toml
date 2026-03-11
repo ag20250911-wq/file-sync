@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "file_sync_server",
+    "file_sync_client/src-tauri",
+    "libs/dir_json",
+    "libs/file_sync_proto",
+]
+
+resolver = "2"

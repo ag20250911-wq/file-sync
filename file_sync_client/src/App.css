@@ -1,0 +1,517 @@
+/* src/App.css */
+:root {
+  --bg-main: #1e1e1e;
+  --bg-side: #252526;
+  --hover-bg: #2a2d2e;
+  --selected-bg: #37373d;
+  --accent: #0078d4;
+  --text-main: #cccccc;
+  --text-dim: #858585;
+  --border: #333333;
+  --input-bg: #3c3c3c;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  overflow: hidden;
+}
+
+body {
+  font-family: "Segoe UI", "Meiryo", sans-serif;
+  user-select: none;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* --- Toolbar Container --- */
+.toolbar {
+  height: 48px; /* 高さを固定して安定させる */
+  padding: 0 16px;
+  background-color: var(--bg-side); /* ダークな背景色 */
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 左右に要素を振り分け */
+  gap: 16px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+/* --- Groups (Left & Right) --- */
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.main-group {
+  flex: 1; /* 左側を広げてURL入力欄を確保 */
+  max-width: 60%;
+}
+
+.settings-group {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* --- Status Badge --- */
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.status-badge.connected {
+  color: #4ec9b0; /* VS Code風の緑 */
+  border-color: rgba(78, 201, 176, 0.3);
+  background-color: rgba(78, 201, 176, 0.1);
+}
+
+.status-badge.retry {
+  color: #f14c4c; /* エラーの赤 */
+  border-color: rgba(241, 76, 76, 0.3);
+  background-color: rgba(241, 76, 76, 0.1);
+}
+
+.status-dot {
+  font-size: 10px;
+}
+
+/* --- URL Input --- */
+.url-input-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.url-input {
+  width: 100%;
+  background-color: var(--input-bg); /* #3c3c3c */
+  color: var(--text-main);
+  border: 1px solid transparent;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: 'Consolas', monospace;
+  transition: border-color 0.2s;
+}
+
+.url-input:focus {
+  outline: none;
+  border-color: var(--accent); /* フォーカス時に青枠 */
+  background-color: #444;
+}
+
+/* --- Buttons --- */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  transition: background-color 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* Icon Only Button (Refresh) */
+.btn-icon {
+  background: transparent;
+  color: var(--text-main);
+  padding: 6px;
+  font-size: 16px;
+}
+
+.btn-icon:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Secondary Buttons (Change/Open) */
+.btn-secondary {
+  background-color: #333;
+  color: var(--text-main);
+  padding: 5px 12px;
+  font-size: 11px;
+  border: 1px solid #444;
+}
+
+.btn-secondary:hover {
+  background-color: #444;
+  border-color: #555;
+}
+
+/* --- Save Path Display --- */
+.save-label {
+  white-space: nowrap;
+  font-weight: 600;
+  color: #888;
+}
+
+.save-path-display {
+  background-color: rgba(0, 0, 0, 0.2);
+  color: #ce9178; /* 文字列っぽい色 */
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: 'Consolas', monospace;
+  font-size: 11px;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  user-select: text;
+}
+
+.save-path-display:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+  border-color: var(--accent);
+}
+
+
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--bg-main);
+  /* 縞々（ゼブラ）の背景 */
+  background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 32px;
+}
+
+.tree-node {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.1s;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.tree-node:hover {
+  background-color: var(--hover-bg);
+}
+
+.tree-node.selected {
+  background-color: var(--selected-bg);
+  outline: 1px solid var(--accent);
+}
+
+.children-container {
+  border-left: 1px solid #333;
+  margin-left: 18px;
+}
+
+.icon {
+  margin-right: 6px;
+  font-size: 16px;
+  filter: grayscale(0.2);
+}
+.icon-folder { color: #e8a838; }
+.icon-file { color: #9cdcfe; }
+
+.name {
+  font-size: 13px;
+  color: #e0e0e0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 20px;
+}
+
+/* 同期済み（緑） */
+.name.status-synced {
+  color: #4ec9b0;
+}
+
+/* 更新あり（黄色） */
+.name.status-outdated {
+  color: #cca700;
+  font-weight: bold;
+}
+
+/* ダウンロード途中（青） */
+.name.status-partial {
+  color: #569cd6; /* VS Codeのキーワード色のような青 */
+  font-style: italic;
+}
+
+.is-dir .name {
+  font-weight: 600;
+  color: #ccc;
+}
+
+.file-info {
+  display: flex;
+  gap: 20px;
+  flex-shrink: 0;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.date {
+  width: 120px;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: right;
+}
+
+.size {
+  width: 70px;
+  font-size: 11px;
+  color: #aaa;
+  text-align: right;
+  font-weight: 500;
+}
+
+.context-menu {
+  position: fixed;
+  background: var(--bg-side);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.5); /* 影を少し強調 */
+  border-radius: 6px;
+  padding: 4px 0;
+  min-width: 220px;     /* 横幅を少し広げる */
+  overflow: visible;    /* スクロールバーを出さず、中身(サブメニュー)をはみ出させる */
+  
+  /* max-height は画面からはみ出る場合にスクロールさせる設定ですが、
+     サブメニューを使う場合は相性が悪いため一旦削除するか、大きく設定します */
+  /* max-height: 90vh;  <-- これがあるとサブメニューが切れる原因になるので削除推奨 */
+}
+
+.menu-item {
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-main);
+}
+
+.menu-item:hover {
+  background-color: var(--accent);
+  color: white;
+}
+
+
+/* 親メニューアイテム (サブメニューを持つ項目) */
+.menu-item-parent {
+  position: relative; /* 子要素の基準点 */
+  display: flex;
+  justify-content: space-between; /* 文字と矢印を左右に */
+  align-items: center;
+}
+
+/* 右矢印 (▶) */
+.menu-arrow {
+  font-size: 10px;
+  color: #888;
+  margin-left: 8px;
+}
+
+/* サブメニュー本体 (最初は非表示) */
+.submenu {
+  display: none;
+  position: absolute;
+  top: -4px; /* 親と少しずらす */
+  left: 100%; /* 親の右側に表示 */
+  margin-left: -2px; /* 親メニューと少し重ねて隙間をなくす */
+
+  background: var(--bg-side);
+  border: 1px solid var(--border);
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+  border-radius: 4px;
+  padding: 4px 0;
+  min-width: 180px;
+  z-index: 10000;
+}
+
+/* ホバー時に表示 */
+.menu-item-parent:hover .submenu {
+  display: block;
+}
+
+/* 画面右端ではみ出る場合の対策 (左側に出す) */
+/* ※ 必要なら JS で位置計算してクラスを切り替える実装も可能ですが、簡易的には以下 */
+.menu-item-parent.submenu-left:hover .submenu { 
+  left: auto; right: 100%; 
+} 
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 進捗オーバーレイの基本スタイル */
+.progress-overlay {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 300px;
+  background: #2d2d2d;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+/* 通知全体のクリックイベントは外す（ボタンのみに反応させる） */
+.progress-overlay.finished-toast {
+  background: #1e3a2f; /* 完了時の濃い緑背景 */
+  border-color: #2ecc71; /* 緑のボーダー */
+  animation: bounce 0.5s ease;
+  cursor: default;
+}
+
+.progress-overlay.finished-toast:hover {
+  background: #284d3e;
+  transform: translateY(-2px);
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.notification-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  justify-content: flex-end;
+}
+
+.btn-notify {
+  background: #444;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-notify:hover {
+  background: #666;
+}
+
+.btn-notify-close {
+  background: transparent;
+  color: #999;
+  border: none;
+  padding: 0 5px;
+  cursor: pointer;
+}
+
+.btn-notify-close:hover {
+  color: white;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.progress-path {
+  font-size: 11px;
+  color: #ccc;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 8px;
+}
+
+progress {
+  width: 100%;
+  height: 8px;
+  accent-color: #2ecc71; /* 進捗バーの色 */
+}
+
+.progress-details {
+  font-size: 11px;
+  color: #aaa;
+  text-align: right;
+  margin-top: 4px;
+  font-family: 'Consolas', monospace;
+}
+
+/* アップロード途中のファイル */
+.partial-file {
+  opacity: 0.6;
+  font-style: italic;
+}
+
+
+/* --- ドラッグ＆ドロップ用オーバーレイ --- */
+.drag-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 9999; /* 最前面に表示 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; /* ドロップイベントを下のwebviewに貫通させる */
+}
+
+.drag-overlay::before {
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  border: 3px dashed var(--accent);
+  border-radius: 12px;
+}
+
+.drag-message {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  background: rgba(0, 120, 212, 0.8); /* Accent color */
+  padding: 16px 32px;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+/* --- ドラッグ中のドロップ先ハイライト --- */
+.tree-node.drag-over-target {
+  background-color: rgba(0, 120, 212, 0.4) !important;
+  outline: 2px dashed #4ec9b0;
+  border-radius: 4px;
+}
