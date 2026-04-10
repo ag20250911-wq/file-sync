@@ -31,6 +31,52 @@ fn now_str() -> String {
     Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
 }
 
+// --- IPブロック機能 ---
+// 環境変数: DENY_IPS=80.94.95.0/24,192.168.1.0/24
+
+struct IpFilter {
+    rules: Vec<(u32, u32)>, // (network_addr, mask)
+}
+
+impl IpFilter {
+    fn from_env() -> Self {
+        let rules = std::env::var("DENY_IPS")
+            .unwrap_or_default()
+            .split(',')
+            .filter_map(|entry| Self::parse_cidr(entry.trim()))
+            .collect();        
+        Self { rules }
+    }
+
+    fn parse_cidr(cidr: &str) -> Option<(u32, u32)> {
+        if cidr.is_empty() { return None; }
+        let (ip_str, prefix_len) = if let Some((a, b)) = cidr.split_once('/') {
+            (a, b.parse::<u32>().ok()?)
+        } else {
+            (cidr, 32) // /32 扱い (単一IP)
+        };
+
+        let ip: std::net::Ipv4Addr = ip_str.parse().ok()?;
+        let mask = if prefix_len == 0 { 0u32 } else { !0u32 << (32 - prefix_len) };
+        let network = u32::from(ip) & mask;
+        Some((network, mask))
+    }
+
+    fn is_blocked(&self, addr: &SocketAddr) -> bool {
+        let ipv4 = match addr.ip() {
+            std::net::IpAddr::V4(v4) => v4,
+            std::net::IpAddr::V6(v6) => {
+                // ::ffff:x.x.x.x 形式のIPv4マップアドレスを変換
+                match v6.to_ipv4_mapped() {
+                    Some(v4) => v4,
+                    None => return false,
+                }
+            }
+        };
+        let ip_int = u32::from(ipv4);
+        self.rules.iter().any(|(network, mask)| ip_int & mask == *network)
+    }
+}
 
 /*
 // ネットワークディスクやRamdiskで使えない
@@ -198,6 +244,9 @@ async fn main(){
     let transfer_port: u16 = env::var("TRANSFER_PORT").unwrap_or_else(|_| "44445".to_string()).parse().expect("TRANSFER_PORT must be a number");
     let debounce_ms: u64 = env::var("DEBOUNCE_MS").unwrap_or_else(|_| "1000".to_string()).parse().expect("DEBOUNCE_MS must be a number");
  
+    // ブロック対象のIPアドレス 内部で.env DENY_IPS を読み取る Arc で共有
+    let ip_filter = Arc::new(IpFilter::from_env());
+    
     // HTTPパスが / で始まっていない場合は補完
     let http_path = if http_path.starts_with('/'){ http_path } else { format!("/{}", http_path) };
 
@@ -315,12 +364,18 @@ async fn main(){
     // tcpリスナー クライアントの生存チェック json更新をクライアントに通知
     let tx_for_listener = tx.clone();
     let notify_bind_addr = format!("{}:{}", bind_addr_str, notify_port);
+
+    let ip_filter_notify = Arc::clone(&ip_filter);
     tokio::spawn(async move {
         let listener = tokio::net::TcpListener::bind(&notify_bind_addr).await.unwrap();
         println!("[{}] 更新通知TCPサーバー起動: {}", now_str(), notify_bind_addr);
 
         loop {
             let (mut stream, sockaddr) = listener.accept().await.unwrap();
+            if ip_filter_notify.is_blocked(&sockaddr) {
+                println!("[{}] 接続拒否: {:?}", now_str(), sockaddr);
+                continue;
+            }
             let mut rx = tx_for_listener.subscribe();
 
             // 接続してきたソケットを新しいスレッド実行
@@ -391,11 +446,19 @@ async fn main(){
             let (mut stream, sockaddr) = listener.accept().await.unwrap();
             let base_dir = transfer_target_dir.clone();
 
+            println!("[{}] 接続受付: {:?}", now_str(), sockaddr);
+
             // 個別の接続スレッドにもキャッシュを渡す
             let cache_inner = Arc::clone(&transfer_cache_arc);
-
+            
+            let ip_filter_transfer = Arc::clone(&ip_filter);
             tokio::spawn(async move{
                 let (reader, mut writer) = stream.split();
+                if ip_filter_transfer.is_blocked(&sockaddr) {
+                    println!("[{}] 接続拒否: {:?}", now_str(), sockaddr);
+                    return;
+                }
+                
                 let mut buf_reader = BufReader::new(reader);
                 let mut line = String::new();
                 
